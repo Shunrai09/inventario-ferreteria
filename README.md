@@ -79,6 +79,21 @@ Los vendedores se crean después desde **Usuarios**. Para pasar toda la informac
 
 Los scripts también funcionan con MySQL y PHP instalados por separado (PHP en el `PATH` o en `C:\php`).
 
+### Problemas al instalar
+
+**`Error writing file 'C:\xampp\mysql\data\aria_log.00000001' (Errcode: 22 "Invalid argument")`**: el MySQL (MariaDB) de XAMPP no puede escribir su registro interno. No es un error del sistema y `instalar.bat` se puede repetir sin riesgo después de arreglarlo.
+
+1. Detén MySQL: *XAMPP Control Panel → Stop*. Si el panel no lo muestra encendido (lo encendió `iniciar.bat` o `instalar.bat`), en una ventana de comandos: `C:\xampp\mysql\bin\mysqladmin -u root shutdown`.
+2. Copia la carpeta `C:\xampp\mysql\data` a otro lugar como respaldo.
+3. En `C:\xampp\mysql\data` cambia el nombre de `aria_log.00000001` y de `aria_log_control` (por ejemplo, agrégales `.bak` al final). MariaDB los vuelve a crear al encender.
+4. Enciende MySQL y vuelve a ejecutar `instalar.bat`.
+
+Si el error sigue, la causa puede ser el disco: en Windows 11, algunos discos NVMe informan sectores de más de 4 KB y las bases de datos fallan con "Invalid argument". Para comprobarlo, abre una ventana de comandos **como administrador** y ejecuta `fsutil fsinfo sectorinfo C:`. Si `PhysicalBytesPerSectorForAtomicity` es mayor que 4096, aplica el ajuste que documenta Microsoft y reinicia la PC:
+
+```
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\stornvme\Parameters\Device" /v "ForcedPhysicalSectorSizeInBytes" /t REG_MULTI_SZ /d "* 4095" /f
+```
+
 ## Instalación manual o en un hosting
 
 1. **Configuración.** Copia `config/config.example.php` como `config/config.php` y completa el nombre de la empresa, las tiendas y los datos de conexión.

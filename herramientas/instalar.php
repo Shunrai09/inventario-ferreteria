@@ -198,7 +198,15 @@ try {
             ->execute([$usuarioAdmin, password_hash($claveAdmin, PASSWORD_DEFAULT)]);
     }
 } catch (PDOException $e) {
-    salir(1, 'MySQL devolvió un error: ' . $e->getMessage());
+    $ayuda = '';
+    // MariaDB de XAMPP con su registro interno (aria_log) dañado o en un disco que no acepta: no es un error del sistema
+    if (str_contains($e->getMessage(), 'aria_log')) {
+        $ayuda = PHP_EOL . PHP_EOL . 'Es un problema del MySQL (MariaDB) de XAMPP con su archivo interno aria_log:' . PHP_EOL
+            . '  1. Detén MySQL (XAMPP Control Panel > Stop, o: C:\xampp\mysql\bin\mysqladmin -u root shutdown).' . PHP_EOL
+            . '  2. En C:\xampp\mysql\data cambia el nombre de aria_log.00000001 y aria_log_control (por ejemplo, agrega .bak al final).' . PHP_EOL
+            . '  3. Enciende MySQL y vuelve a ejecutar instalar.bat. Ver README.md, sección "Problemas al instalar".';
+    }
+    salir(1, 'MySQL devolvió un error: ' . $e->getMessage() . $ayuda);
 }
 
 linea();
