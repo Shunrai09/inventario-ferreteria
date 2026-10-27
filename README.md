@@ -36,6 +36,7 @@ public/            Raíz web: lo único accesible desde el navegador
   index.php            Panel principal
   login.php, iniciar_sesion.php, cerrar_sesion.php
   productos/  categorias/  clientes/  usuarios/  perfil/
+  empresa/             Datos de la empresa (nombre, RUC, ticket) y ticket de prueba
   ventas/              Punto de venta (carrito), cobro, anulación y ticket imprimible
   caja/                Apertura, cierre con arqueo, comprobante e historial de cierres
   compras/             Registro de compras
@@ -147,15 +148,17 @@ Los respaldos también se pueden importar con phpMyAdmin (**Importar**, con la b
 
 ## Personalizar para la empresa
 
-Todo está en `config/config.php`:
+**El nombre de la empresa, el RUC, la dirección, el teléfono, el mensaje al final del ticket y el ancho del papel** (80 o 58 mm) se cambian desde el sistema: **menú del usuario → Datos de la empresa** (solo administradores). Se guardan en la base (tabla `configuracion`), así que viajan con los respaldos y no se pierden al actualizar. En esa misma pantalla, **Imprimir ticket de prueba** sirve para probar la ticketera sin hacer una venta.
+
+Lo demás está en `config/config.php`:
 
 | Clave | Qué cambia |
 |---|---|
-| `empresa.nombre`, `empresa.sistema` | Nombre en la barra, el login y el título de las páginas |
+| `empresa.nombre`, `empresa.sistema` | Nombre en la barra, el login y el título de las páginas. El nombre es solo el valor inicial: luego se cambia en Datos de la empresa |
 | `empresa.logo` | Ruta de un logo dentro de `public/`, por ejemplo `assets/img/logo.png`. Vacío muestra el nombre |
 | `empresa.icono` | Icono de Font Awesome junto al nombre cuando no hay logo, por ejemplo `fas fa-tools` |
-| `empresa.ruc`, `empresa.direccion`, `empresa.telefono` | Encabezado del ticket de venta. Los vacíos no se imprimen |
-| `ticket.ancho_mm`, `ticket.pie` | Ancho del rollo de la impresora térmica (80 o 58) y texto final del ticket |
+| `empresa.ruc`, `empresa.direccion`, `empresa.telefono` | Valores iniciales del encabezado del ticket (luego, Datos de la empresa). Los vacíos no se imprimen |
+| `ticket.ancho_mm`, `ticket.pie` | Valores iniciales del ancho del rollo (80 o 58) y del texto final del ticket (luego, Datos de la empresa) |
 | `moneda` | Símbolo de los importes (`S/`, `$`, `€`…) |
 | `zona_horaria`, `zona_horaria_bd` | Hora de PHP y de MySQL (deben coincidir) |
 | `tiendas` | Tiendas o sucursales: nombre, etiqueta corta y colores. La clave es lo que se guarda en `productos.clasificacion`. Con una sola tienda (lo configurado de inicio) se ocultan el selector de tienda, sus columnas, filtros y estadísticas; al agregar una segunda vuelven a aparecer |

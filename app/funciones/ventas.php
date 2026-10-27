@@ -185,6 +185,18 @@ function obtenerProductosVendidos($idVenta){
     return select($sentencia, [$idVenta]);
 }
 
+// Venta de ejemplo para el ticket de prueba (Datos de la empresa): no se guarda ni toca el stock.
+function ventaDePrueba($usuario){
+    $productos = [
+        (object) ['nombre' => 'Martillo de una 16 oz', 'cantidad' => 1, 'precio' => 25, 'unidad' => 'und'],
+        (object) ['nombre' => 'Cable THW 14 AWG', 'cantidad' => 2.5, 'precio' => 2, 'unidad' => 'm'],
+    ];
+    return (object) [
+        'id' => 0, 'fecha' => date("Y-m-d H:i:s"), 'usuario' => $usuario, 'cliente' => 'MOSTRADOR', 'total' => 30,
+        'formaPago' => 'efectivo', 'pagoCon' => 50, 'anulada' => 0, 'productos' => $productos,
+    ];
+}
+
 // Registra la venta, sus líneas y el descuento de stock en una sola transacción.
 // $pagoCon: efectivo que entregó el cliente (null si no se indicó o no pagó en efectivo). $idCaja: caja abierta.
 // Devuelve el id de la venta registrada (para abrir su ticket).

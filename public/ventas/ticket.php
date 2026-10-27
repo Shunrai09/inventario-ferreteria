@@ -1,10 +1,12 @@
 <?php
 // Ticket de una venta, listo para imprimir en impresora térmica (80 o 58 mm) o en hoja normal.
 // ?id=ID de la venta. Con &nueva=1 (al terminar una venta) muestra el aviso y el botón "Nueva venta".
+// Con ?prueba=1 muestra un ticket de ejemplo (no es una venta) para probar la ticketera desde Datos de la empresa.
 require_once __DIR__ . "/../../app/bootstrap.php";
 requerirSesion();
 
-$venta = obtenerVentaPorId($_GET['id'] ?? 0);
+$prueba = isset($_GET['prueba']);
+$venta = $prueba ? ventaDePrueba($_SESSION['usuario']) : obtenerVentaPorId($_GET['id'] ?? 0);
 $nueva = isset($_GET['nueva']);
 $ancho = max(48, min(120, (int) TICKET['ancho_mm']));
 $numero = $venta ? str_pad($venta->id, 6, '0', STR_PAD_LEFT) : '';
@@ -32,9 +34,13 @@ unset($_SESSION['mensaje_pagina']);
     <div class="acciones no-imprimir">
         <?php if($nueva): ?>
             <p class="aviso">✔ Venta N° <?= $numero ?> registrada</p>
+        <?php elseif($prueba): ?>
+            <p class="aviso">Ticket de prueba: no es una venta. En la ventana de impresión elige la ticketera, márgenes "Ninguno" y sin encabezados ni pies de página.</p>
         <?php endif; ?>
         <button type="button" class="principal" id="btnImprimir" onclick="window.print()">Imprimir (Enter)</button>
-        <?php if($nueva || !esAdministrador()): ?>
+        <?php if($prueba): ?>
+            <a href="<?= url('empresa/index.php') ?>" id="btnSalir">Datos de la empresa (Esc)</a>
+        <?php elseif($nueva || !esAdministrador()): ?>
             <a href="<?= url('ventas/index.php') ?>" id="btnSalir">Nueva venta (Esc)</a>
         <?php else: ?>
             <a href="<?= url('reportes/ventas.php') ?>" id="btnSalir">Reporte de ventas (Esc)</a>
@@ -42,7 +48,7 @@ unset($_SESSION['mensaje_pagina']);
         <?php if($mensajeAnulacion): ?>
             <p class="aviso"><?= htmlspecialchars($mensajeAnulacion['texto']) ?></p>
         <?php endif; ?>
-        <?php if(esAdministrador() && !$venta->anulada): ?>
+        <?php if(esAdministrador() && !$venta->anulada && !$prueba): ?>
             <!-- Para una venta hecha por error: queda anulada (no se borra) y sus productos vuelven al inventario -->
             <details class="anular">
                 <summary>Anular venta</summary>
@@ -71,7 +77,7 @@ unset($_SESSION['mensaje_pagina']);
         <div class="separador"></div>
         <table>
             <tr>
-                <td><strong>TICKET DE VENTA</strong></td>
+                <td><strong><?= $prueba ? 'TICKET DE PRUEBA' : 'TICKET DE VENTA' ?></strong></td>
                 <td class="derecha"><strong>N° <?= $numero ?></strong></td>
             </tr>
             <tr><td>Fecha:</td><td class="derecha"><?= date('d/m/Y H:i', strtotime($venta->fecha)) ?></td></tr>

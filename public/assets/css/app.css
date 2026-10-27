@@ -470,6 +470,16 @@ body > .alert:first-child { margin-top: 3rem; }   /* página de error del inicio
 .diferencia-caja--sobra { background: var(--info-suave); color: var(--info); }
 .diferencia-caja--falta { background: var(--peligro-suave); color: var(--peligro); }
 
+/* Vista previa del encabezado del ticket (Datos de la empresa) */
+.vista-ticket {
+    max-width: 300px; margin: 0 auto; padding: 1rem; background: #fff; color: #000;
+    border: 1px solid var(--borde); border-radius: var(--radio-sm); box-shadow: var(--sombra-1);
+    font-family: "Courier New", Courier, monospace; font-size: .8rem; line-height: 1.4; text-align: center;
+}
+.vista-ticket-empresa { font-size: 1.1rem; font-weight: 700; }
+.vista-ticket-pie { white-space: pre-line; }
+.vista-ticket-separador { border-top: 1px dashed #000; margin: .4rem 0; }
+
 /* Ventas anuladas en los reportes: atenuadas y con el importe tachado */
 .venta-anulada td { color: var(--texto-suave); background: var(--gris-50); }
 .venta-anulada .importe-venta { text-decoration: line-through; }

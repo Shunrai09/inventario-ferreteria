@@ -16,14 +16,18 @@ $config = require $archivoConfig;
 
 date_default_timezone_set($config['zona_horaria']);
 
-define('EMPRESA_NOMBRE', $config['empresa']['nombre']);
 define('EMPRESA_SISTEMA', $config['empresa']['sistema']);
 define('EMPRESA_LOGO', $config['empresa']['logo']);
 define('EMPRESA_ICONO', $config['empresa']['icono'] ?? 'fas fa-store');
-define('EMPRESA_RUC', $config['empresa']['ruc'] ?? '');
-define('EMPRESA_DIRECCION', $config['empresa']['direccion'] ?? '');
-define('EMPRESA_TELEFONO', $config['empresa']['telefono'] ?? '');
-define('TICKET', ($config['ticket'] ?? []) + ['ancho_mm' => 80, 'pie' => '¡Gracias por su compra!']);
+// Valores iniciales de los datos de la empresa y del ticket; los que se guarden desde el sistema los reemplazan (más abajo)
+$datosIniciales = [
+    'empresa.nombre'    => $config['empresa']['nombre'],
+    'empresa.ruc'       => $config['empresa']['ruc'] ?? '',
+    'empresa.direccion' => $config['empresa']['direccion'] ?? '',
+    'empresa.telefono'  => $config['empresa']['telefono'] ?? '',
+    'ticket.pie'        => $config['ticket']['pie'] ?? '¡Gracias por su compra!',
+    'ticket.ancho_mm'   => $config['ticket']['ancho_mm'] ?? 80,
+];
 define('MONEDA', $config['moneda']);
 define('ZONA_HORARIA_BD', $config['zona_horaria_bd']);
 define('PASSWORD_PREDETERMINADA', $config['password_predeterminada']);
@@ -75,6 +79,17 @@ require_once APP_DIR . '/funciones/importacion.php';
 require_once APP_DIR . '/funciones/caja.php';
 require_once APP_DIR . '/funciones/ajustes.php';
 require_once APP_DIR . '/funciones/respaldos.php';
+require_once APP_DIR . '/funciones/empresa.php';
+
+// Datos de la empresa y del ticket: los guardados en "Datos de la empresa" o, si no hay, los de config.php
+$datosEmpresa = leerDatosEmpresaGuardados() + $datosIniciales;
+define('EMPRESA_NOMBRE', $datosEmpresa['empresa.nombre']);
+define('EMPRESA_RUC', $datosEmpresa['empresa.ruc']);
+define('EMPRESA_DIRECCION', $datosEmpresa['empresa.direccion']);
+define('EMPRESA_TELEFONO', $datosEmpresa['empresa.telefono']);
+define('TICKET', ['ancho_mm' => (int) $datosEmpresa['ticket.ancho_mm'], 'pie' => $datosEmpresa['ticket.pie']]);
+define('DATOS_EMPRESA_INICIALES', $datosIniciales);
+unset($datosEmpresa, $datosIniciales);
 
 if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
     session_start();

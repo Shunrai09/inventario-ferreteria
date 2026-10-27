@@ -74,6 +74,7 @@ $enlaceMenu = function($ruta, $icono, $texto, $seccion) use ($paginaActual) {
             <li><a class="dropdown-item" href="<?= url('perfil/index.php') ?>"><i class="fas fa-user-circle me-2"></i>Mi perfil</a></li>
             <li><a class="dropdown-item" href="<?= url('perfil/cambiar_password.php') ?>"><i class="fas fa-key me-2"></i>Cambiar contraseña</a></li>
             <?php if(esAdministrador()): ?>
+            <li><a class="dropdown-item<?= str_starts_with($paginaActual, 'empresa/') ? ' active' : '' ?>" href="<?= url('empresa/index.php') ?>"><i class="fas fa-building me-2"></i>Datos de la empresa</a></li>
             <li><a class="dropdown-item<?= str_starts_with($paginaActual, 'respaldos/') ? ' active' : '' ?>" href="<?= url('respaldos/index.php') ?>"><i class="fas fa-database me-2"></i>Respaldos</a></li>
             <?php endif; ?>
             <li><hr class="dropdown-divider"></li>

@@ -144,6 +144,15 @@ CREATE TABLE IF NOT EXISTS ajustes_inventario (
     KEY idx_ajustes_producto (idProducto)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Datos de la empresa editables desde el sistema (menú del usuario > Datos de la empresa): nombre, RUC, dirección,
+-- teléfono, pie y ancho del ticket. Una fila por dato; los que no tienen fila toman su valor de config/config.php.
+CREATE TABLE IF NOT EXISTS configuracion (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    clave VARCHAR(50) NOT NULL,
+    valor TEXT NULL,
+    UNIQUE KEY uq_configuracion_clave (clave)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Usuario administrador inicial (descomentar y completar).
 -- Genera el hash de la clave en tu equipo con este comando:
 --   php herramientas/generar_hash.php "TuClave"
@@ -151,3 +160,4 @@ CREATE TABLE IF NOT EXISTS ajustes_inventario (
 --
 -- INSERT INTO usuarios (usuario, nombre, telefono, direccion, password, rol)
 -- VALUES ('TuUsuario', 'Tu Nombre', '900000000', 'Tu direccion', 'HASH_GENERADO', 'administrador');
+
