@@ -1,0 +1,565 @@
+/* Sistema de diseño del sistema de inventario.
+   Los colores de marca salen de config/config.php ('tema') y se inyectan en app/vistas/encabezado.php
+   después de este archivo; los de aquí son solo el respaldo. Todo lo demás (grises, colores de estado,
+   radios, sombras) se define aquí para que todas las pantallas compartan el mismo lenguaje visual.
+
+   Índice: 1. Variables  2. Base  3. Botones  4. Tarjetas  5. Tablas  6. Insignias y avisos
+           7. Formularios  8. Barra de navegación  9. Componentes propios  10. Punto de venta
+           11. Login  12. Ajustes para móvil */
+
+/* ==================== 1. VARIABLES ==================== */
+:root {
+    /* Marca (se sobrescriben con config 'tema') */
+    --color-primario: #2563EB;
+    --color-primario-oscuro: #1D4ED8;
+    --color-fondo: #F1F5F9;
+    --color-fondo-navbar: #FFFFFF;
+    --color-texto-navbar: #1E293B;
+    --color-borde-navbar: #E2E8F0;
+
+    /* Derivados de la marca */
+    --color-primario-suave: color-mix(in srgb, var(--color-primario) 10%, #fff);
+    --color-primario-anillo: color-mix(in srgb, var(--color-primario) 25%, transparent);
+
+    /* Grises */
+    --gris-50: #F8FAFC;
+    --gris-100: #F1F5F9;
+    --gris-200: #E2E8F0;
+    --gris-300: #CBD5E1;
+    --gris-400: #94A3B8;
+    --gris-500: #64748B;
+    --gris-600: #475569;
+    --gris-700: #334155;
+    --gris-800: #1E293B;
+    --gris-900: #0F172A;
+
+    /* Estados: color fuerte (texto, botones) y suave (fondos). Contraste AA sobre su fondo. */
+    --exito: #15803D;        --exito-suave: #DCFCE7;   --exito-borde: #BBF7D0;
+    --peligro: #B91C1C;      --peligro-suave: #FEE2E2; --peligro-borde: #FECACA;
+    --aviso: #92400E;        --aviso-suave: #FEF3C7;   --aviso-borde: #FDE68A;
+    --info: #075985;         --info-suave: #E0F2FE;    --info-borde: #BAE6FD;
+
+    /* Superficies y texto */
+    --superficie: #FFFFFF;
+    --borde: var(--gris-200);
+    --texto: var(--gris-900);
+    --texto-secundario: var(--gris-600);
+    --texto-suave: #5F6F86;          /* 5.1:1 sobre blanco y 4.7:1 sobre el fondo de página (AA) */
+    --borde-control: #8592A6;        /* borde de campos: 3.1:1 sobre blanco (WCAG 1.4.11) */
+
+    /* Forma */
+    --radio-sm: 6px;
+    --radio: 10px;
+    --radio-lg: 14px;
+    --sombra-1: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .07);
+    --sombra-2: 0 4px 16px rgba(15, 23, 42, .08);
+    --fuente: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ==================== 2. BASE ==================== */
+body {
+    font-family: var(--fuente);
+    background: var(--color-fondo);
+    color: var(--texto);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Los títulos heredan el color (oscuro en general, blanco sobre fondos de marca como el login) */
+h1, h2, h3, h4, h5, h6 { color: inherit; font-weight: 700; letter-spacing: -.01em; }
+a { color: var(--color-primario-oscuro); }
+a:hover { color: var(--color-primario); }
+.text-muted { color: var(--texto-suave) !important; }
+.text-primary { color: var(--color-primario-oscuro) !important; }
+.text-success { color: var(--exito) !important; }
+.text-danger { color: var(--peligro) !important; }
+.text-warning { color: var(--aviso) !important; }
+.text-info { color: var(--info) !important; }
+code { color: var(--gris-700); background: var(--gris-100); padding: .1rem .35rem; border-radius: 4px; }
+
+/* Espacio común de todas las páginas internas (debajo de la barra) */
+.navbar-custom ~ .container,
+.navbar-custom ~ .container-fluid,
+.navbar-custom ~ .container-xl {
+    padding-top: 1.75rem;
+    padding-bottom: 3rem;
+}
+.navbar-custom ~ .container-fluid { max-width: 1320px; }
+.navbar-custom ~ .aviso-global { padding-bottom: 0; }
+
+/* Avisos que algunas páginas imprimen después del formulario */
+body > .alert { max-width: 760px; margin: 0 auto 1.5rem; }
+body > .alert:first-child { margin-top: 3rem; }   /* página de error del inicio de sesión */
+
+/* Foco visible para teclado en todo el sistema (contorno de la marca: 5:1 sobre blanco) */
+:focus-visible { outline: 2px solid var(--color-primario); outline-offset: 2px; }
+
+/* Enlace "Saltar al contenido": invisible hasta que se llega con Tab */
+.saltar-contenido:focus {
+    position: fixed; top: .5rem; left: .5rem; z-index: 2000;
+    background: var(--superficie); color: var(--color-primario-oscuro);
+    padding: .6rem 1rem; border-radius: var(--radio); box-shadow: var(--sombra-2);
+}
+
+/* ==================== 3. BOTONES ==================== */
+.btn {
+    border-radius: var(--radio-sm);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.btn-sm { border-radius: 6px; }
+.btn-lg { font-size: 1rem; padding: .65rem 1.25rem; border-radius: var(--radio); }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-primario) !important; }
+.btn:focus:not(:focus-visible) { box-shadow: none !important; }
+
+.btn-primary, .btn-marca, .btn-login {
+    color: #fff; background-color: var(--color-primario); border-color: var(--color-primario);
+}
+.btn-primary:hover, .btn-primary:active, .btn-marca:hover, .btn-marca:focus, .btn-login:hover {
+    color: #fff; background-color: var(--color-primario-oscuro); border-color: var(--color-primario-oscuro);
+}
+.btn-success { color: #fff; background-color: var(--exito); border-color: var(--exito); }
+.btn-success:hover, .btn-success:active { color: #fff; background-color: #166534; border-color: #166534; }
+.btn-danger { color: #fff; background-color: #DC2626; border-color: #DC2626; }
+.btn-danger:hover, .btn-danger:active { color: #fff; background-color: var(--peligro); border-color: var(--peligro); }
+.btn-secondary { color: #fff; background-color: var(--gris-600); border-color: var(--gris-600); }
+.btn-secondary:hover { color: #fff; background-color: var(--gris-700); border-color: var(--gris-700); }
+/* Info y aviso eran colores sin significado: pasan a ser botones suaves de la marca */
+.btn-info { color: var(--color-primario-oscuro); background-color: var(--color-primario-suave); border-color: transparent; }
+.btn-info:hover { color: #fff; background-color: var(--color-primario); border-color: var(--color-primario); }
+.btn-warning { color: var(--gris-900); background-color: #FBBF24; border-color: #FBBF24; }
+.btn-warning:hover { color: var(--gris-900); background-color: #F59E0B; border-color: #F59E0B; }
+
+.btn-outline-secondary, .btn-outline-dark, .btn-light {
+    color: var(--gris-700); background-color: var(--superficie); border-color: var(--gris-300);
+}
+.btn-outline-secondary:hover, .btn-outline-dark:hover, .btn-light:hover,
+.btn-outline-dark.active, .btn-outline-secondary.active {
+    color: var(--gris-900); background-color: var(--gris-100); border-color: var(--gris-400);
+}
+.btn-outline-primary { color: var(--color-primario-oscuro); border-color: var(--gris-300); background: var(--superficie); }
+.btn-outline-primary:hover { color: #fff; background-color: var(--color-primario); border-color: var(--color-primario); }
+.btn-outline-success { color: var(--exito); border-color: var(--gris-300); background: var(--superficie); }
+.btn-outline-success:hover { color: #fff; background-color: var(--exito); border-color: var(--exito); }
+.btn-outline-danger { color: var(--peligro); border-color: var(--gris-300); background: var(--superficie); }
+.btn-outline-danger:hover { color: #fff; background-color: #DC2626; border-color: #DC2626; }
+.btn-outline-warning { color: var(--aviso); border-color: var(--gris-300); background: var(--superficie); }
+.btn-outline-warning:hover { color: var(--gris-900); background-color: #FBBF24; border-color: #FBBF24; }
+.btn:disabled, .btn.disabled { opacity: .55; }
+
+/* Botón cuadrado solo con icono (acciones de tabla). Área táctil de 36 px; 44 px en pantallas táctiles. */
+.btn-icono { width: 36px; height: 36px; padding: 0; }
+@media (pointer: coarse) {
+    .btn-icono { width: 44px; height: 44px; }
+    .btn-sm { min-height: 40px; }
+    .cantidad-carrito .btn { min-width: 40px; }
+}
+
+/* ==================== 4. TARJETAS ==================== */
+.card {
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-1);
+    background: var(--superficie);
+}
+.card.border-0 { border: 1px solid var(--borde) !important; }
+.card.shadow-sm, .card.shadow-lg, .card.shadow { box-shadow: var(--sombra-1) !important; }
+.card-header {
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borde);
+    padding: .9rem 1.25rem;
+    font-weight: 600;
+    color: var(--texto);
+}
+.card-header:first-child { border-radius: calc(var(--radio-lg) - 1px) calc(var(--radio-lg) - 1px) 0 0; }
+.card-header h5, .card-header h6, .card-header .h5 { font-size: 1rem; font-weight: 600; margin: 0; }
+/* Los encabezados de colores (azul, negro, verde, cian, ámbar) pasan a ser neutros */
+.card-header.bg-primary, .card-header.bg-dark, .card-header.bg-success, .card-header.bg-info,
+.card-header.bg-warning, .card-header.bg-light, .card-header.bg-secondary {
+    background-color: var(--superficie) !important;
+    color: var(--texto) !important;
+}
+.card-header.text-white, .card-header .text-white, .card-header .text-light { color: var(--texto) !important; }
+.card-header .badge.bg-light { background: var(--gris-100) !important; color: var(--gris-700) !important; }
+.card-footer { background: var(--gris-50); border-top: 1px solid var(--borde); }
+.card-footer:last-child { border-radius: 0 0 calc(var(--radio-lg) - 1px) calc(var(--radio-lg) - 1px); }
+.card-title { color: var(--texto); }
+.border-success, .border-info { border-color: var(--borde) !important; }
+
+/* ==================== 5. TABLAS ==================== */
+.table {
+    --bs-table-hover-bg: var(--gris-50);
+    --bs-table-striped-bg: transparent;
+    color: var(--texto);
+    vertical-align: middle;
+    font-size: .925rem;
+    margin-bottom: 0;
+    font-variant-numeric: tabular-nums;
+}
+.table > thead, .table > thead.table-dark, .table > thead.table-light {
+    --bs-table-bg: var(--gris-50);
+    --bs-table-accent-bg: transparent;
+    color: var(--texto-secundario);
+}
+.table > thead th {
+    background-color: var(--gris-50) !important;
+    color: var(--texto-secundario) !important;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid var(--borde) !important;
+    padding: .7rem .75rem;
+    white-space: nowrap;
+}
+.table > :not(:first-child) { border-top: 0; }
+.table > tbody > tr > td { border-color: var(--borde); padding: .7rem .75rem; }
+.table > tfoot > tr > td { background: var(--gris-50); border-color: var(--borde); }
+.table tbody tr:last-child td { border-bottom: 0; }
+.table-success { --bs-table-bg: #F0FDF4 !important; }
+.table-danger { --bs-table-bg: #FEF2F2 !important; }
+/* Tablas dentro de una tarjeta: sin márgenes y con las esquinas de la tarjeta */
+.card > .table-responsive > .table, .card-body.p-0 .table { margin-bottom: 0; }
+
+/* ==================== 6. INSIGNIAS Y AVISOS ==================== */
+.badge {
+    font-weight: 600;
+    font-size: .75rem;
+    padding: .35em .65em;
+    border-radius: 999px;
+    letter-spacing: .01em;
+}
+/* Insignias suaves: fondo claro y texto oscuro del mismo tono (contraste AA) */
+.badge.bg-success { background-color: var(--exito-suave) !important; color: var(--exito) !important; }
+.badge.bg-danger { background-color: var(--peligro-suave) !important; color: var(--peligro) !important; }
+.badge.bg-warning { background-color: var(--aviso-suave) !important; color: var(--aviso) !important; }
+.badge.bg-info { background-color: var(--info-suave) !important; color: var(--info) !important; }
+.badge.bg-primary { background-color: var(--color-primario-suave) !important; color: var(--color-primario-oscuro) !important; }
+.badge.bg-secondary { background-color: var(--gris-100) !important; color: var(--gris-700) !important; }
+.badge.bg-light { background-color: var(--gris-100) !important; color: var(--gris-700) !important; border: 1px solid var(--borde); }
+.badge.bg-dark { background-color: var(--gris-800) !important; color: #fff !important; }
+
+.alert {
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    border-radius: var(--radio);
+    padding: .85rem 1.1rem;
+}
+.alert-success { background: var(--exito-suave); border-color: var(--exito-borde); border-left-color: var(--exito); color: #14532D; }
+.alert-danger { background: var(--peligro-suave); border-color: var(--peligro-borde); border-left-color: var(--peligro); color: #7F1D1D; }
+.alert-warning { background: var(--aviso-suave); border-color: var(--aviso-borde); border-left-color: #D97706; color: #78350F; }
+.alert-info, .alert-primary { background: var(--info-suave); border-color: var(--info-borde); border-left-color: var(--info); color: #0C4A6E; }
+.alert .alert-link { color: inherit; }
+
+/* ==================== 7. FORMULARIOS ==================== */
+.form-label { font-weight: 500; color: var(--gris-700); font-size: .9rem; margin-bottom: .35rem; }
+.form-label.fw-bold { font-weight: 600 !important; }
+.form-control, .form-select {
+    border-color: var(--borde-control);
+    border-radius: var(--radio-sm);
+    color: var(--texto);
+}
+.form-control-lg, .form-select-lg { border-radius: var(--radio); font-size: 1rem; }
+.form-control::placeholder { color: var(--gris-500); }
+.form-control:focus, .form-select:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px var(--color-primario-anillo);
+}
+.input-group-text { background: var(--gris-50); border-color: var(--borde-control); color: var(--gris-600); }
+.form-check-input { border-color: var(--borde-control); }
+.form-text { color: var(--texto-suave); font-size: .8rem; }
+.form-check-input:checked { background-color: var(--color-primario); border-color: var(--color-primario); }
+
+/* Formularios de una columna (clientes, usuarios, contraseña): ancho cómodo de lectura */
+.formulario-angosto { max-width: 760px; }
+
+/* ==================== 8. BARRA DE NAVEGACIÓN ==================== */
+.navbar-custom {
+    background: var(--color-fondo-navbar);
+    border-bottom: 1px solid var(--color-borde-navbar);
+    box-shadow: var(--sombra-1);
+    padding: .5rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+.navbar-custom .navbar-brand { display: flex; align-items: center; margin-right: 1.25rem; }
+.navbar-custom .marca-texto {
+    color: var(--color-texto-navbar);
+    font-weight: 700;
+    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+}
+.marca-icono {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: var(--color-primario);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+}
+.navbar-brand img { max-height: 38px; width: auto; }
+.navbar-custom .nav-link {
+    color: var(--gris-600) !important;
+    font-weight: 500;
+    font-size: .925rem;
+    padding: .5rem .7rem !important;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.navbar-custom .nav-link i { font-size: .95rem; width: 1.1rem; text-align: center; }
+.navbar-custom .nav-link:hover { background-color: var(--gris-100); color: var(--color-texto-navbar) !important; }
+.navbar-custom .nav-link.active, .navbar-custom .nav-link.show {
+    background-color: var(--color-primario-suave);
+    color: var(--color-primario-oscuro) !important;
+}
+.navbar-custom .navbar-nav { gap: .15rem; }
+.navbar-toggler { border-color: var(--gris-300); }
+.navbar-toggler:focus { box-shadow: 0 0 0 3px var(--color-primario-anillo); }
+
+.dropdown-menu, .dropdown-menu-custom {
+    background-color: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-2);
+    padding: .35rem;
+}
+.dropdown-item { border-radius: 6px; color: var(--gris-700); padding: .5rem .75rem; font-size: .925rem; }
+.dropdown-item:hover, .dropdown-item:focus { background-color: var(--gris-100); color: var(--gris-900); }
+.dropdown-item.active, .dropdown-item:active { background-color: var(--color-primario-suave); color: var(--color-primario-oscuro); }
+
+/* Menú del usuario: iniciales, nombre y rol */
+.usuario-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--color-primario-suave);
+    color: var(--color-primario-oscuro);
+    font-weight: 700;
+    font-size: .85rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    text-transform: uppercase;
+}
+.usuario-datos { display: flex; flex-direction: column; line-height: 1.15; text-align: left; }
+.usuario-nombre { color: var(--color-texto-navbar); font-weight: 600; font-size: .875rem; }
+.usuario-rol { font-size: .72rem; color: var(--texto-suave); }
+
+@media (max-width: 1199.98px) {
+    .navbar-custom .navbar-collapse { padding: .75rem 0 .25rem; }
+    .navbar-custom .usuario-menu { border-top: 1px solid var(--borde); margin-top: .5rem; padding-top: .5rem; }
+}
+
+/* ==================== 9. COMPONENTES PROPIOS ==================== */
+/* Encabezado de página: título y subtítulo a la izquierda, acciones a la derecha */
+.encabezado-pagina {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.titulo-pagina {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+.titulo-pagina > i { color: var(--color-primario); font-size: 1.2rem; }
+.subtitulo-pagina { color: var(--texto-suave); margin: .2rem 0 0; font-size: .925rem; }
+.acciones-pagina { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* Indicador: un número importante con su etiqueta e icono */
+.indicador {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-1);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    height: 100%;
+}
+.indicador-icono {
+    flex: 0 0 auto;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-primario-suave);
+    color: var(--color-primario-oscuro);
+    font-size: 1.1rem;
+}
+.indicador-cuerpo { min-width: 0; }
+.indicador-etiqueta { font-size: .8rem; color: var(--texto-suave); font-weight: 500; margin-bottom: .15rem; }
+.indicador-valor {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--texto);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+.indicador-nota { font-size: .8rem; color: var(--texto-suave); margin-top: .3rem; }
+.indicador--exito .indicador-icono { background: var(--exito-suave); color: var(--exito); }
+.indicador--peligro .indicador-icono { background: var(--peligro-suave); color: var(--peligro); }
+.indicador--aviso .indicador-icono { background: var(--aviso-suave); color: var(--aviso); }
+.indicador--info .indicador-icono { background: var(--info-suave); color: var(--info); }
+/* El indicador más importante de la pantalla (ventas de hoy) */
+.indicador--destacado { background: var(--color-primario); border-color: var(--color-primario); }
+.indicador--destacado .indicador-etiqueta, .indicador--destacado .indicador-nota { color: #fff; }
+.indicador--destacado .indicador-valor { color: #fff; }
+.indicador--destacado .indicador-icono { background: rgba(255, 255, 255, .18); color: #fff; }
+
+/* Título de sección dentro de una página */
+.titulo-seccion { font-size: 1rem; font-weight: 600; margin: 0 0 .75rem; color: var(--texto); }
+
+/* Accesos rápidos del panel */
+.acceso-rapido {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    padding: 1rem 1.1rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-lg);
+    color: var(--texto);
+    text-decoration: none;
+    height: 100%;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.acceso-rapido:hover { border-color: var(--color-primario); box-shadow: var(--sombra-2); color: var(--texto); }
+.acceso-rapido .indicador-icono { width: 40px; height: 40px; }
+.acceso-rapido-titulo { font-weight: 600; display: block; }
+.acceso-rapido-texto { font-size: .825rem; color: var(--texto-suave); }
+
+/* Estado vacío: cuando una lista o el carrito no tienen datos */
+.estado-vacio { text-align: center; padding: 2.5rem 1rem; color: var(--texto-suave); }
+.estado-vacio > i { font-size: 2.25rem; color: var(--gris-300); margin-bottom: .75rem; display: block; }
+.estado-vacio h3, .estado-vacio h4 { font-size: 1.1rem; color: var(--gris-700); margin-bottom: .35rem; }
+
+/* Barra de búsqueda y filtros sobre una tabla */
+.barra-filtros {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-lg);
+    padding: .75rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--sombra-1);
+}
+
+/* Lista de datos en dos columnas (etiqueta: valor) */
+.datos-lista { display: grid; grid-template-columns: auto 1fr; gap: .25rem .75rem; margin: 0; font-size: .9rem; }
+.datos-lista dt { color: var(--texto-suave); font-weight: 500; }
+.datos-lista dd { margin: 0; color: var(--texto); }
+/* Variante para importes: etiqueta a la izquierda y cifra alineada a la derecha */
+.datos-lista--importes { grid-template-columns: 1fr auto; }
+.datos-lista--importes dd { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Diferencia del arqueo de caja: cuadra (verde), sobra (azul) o falta (rojo) */
+.diferencia-caja { padding: .5rem .75rem; border-radius: var(--radio-sm); background: var(--gris-50); color: var(--texto-suave); font-weight: 600; }
+.diferencia-caja--cuadra { background: var(--exito-suave); color: var(--exito); }
+.diferencia-caja--sobra { background: var(--info-suave); color: var(--info); }
+.diferencia-caja--falta { background: var(--peligro-suave); color: var(--peligro); }
+
+/* Ventas anuladas en los reportes: atenuadas y con el importe tachado */
+.venta-anulada td { color: var(--texto-suave); background: var(--gris-50); }
+.venta-anulada .importe-venta { text-decoration: line-through; }
+
+/* ==================== 10. PUNTO DE VENTA ==================== */
+.resumen-venta { position: sticky; top: 84px; }
+.resumen-total {
+    background: var(--gris-50);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    padding: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+.resumen-total-etiqueta { font-size: .8rem; color: var(--texto-suave); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+.resumen-total-valor { font-size: 2rem; font-weight: 700; color: var(--texto); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.cantidad-carrito { width: 150px; flex-wrap: nowrap; }
+.stock-carrito { font-size: .8rem; color: var(--texto-suave); white-space: nowrap; }
+.atajo { font-size: .8rem; font-weight: 400; }
+/* Forma de pago: botones de opción del mismo ancho */
+.formas-pago { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: .5rem; }
+.formas-pago .btn { width: 100%; }
+.vuelto { font-weight: 600; font-variant-numeric: tabular-nums; }
+.vuelto--falta { color: var(--peligro); }
+
+/* ==================== 11. LOGIN ==================== */
+.login-container { background: var(--color-fondo); min-height: 100vh; }
+.login-card {
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, .12);
+    overflow: hidden;
+    border: none;
+    background: var(--superficie);
+}
+.login-left {
+    background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-oscuro) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+.login-right { background: var(--superficie); padding: 48px; }
+.login-logo { max-width: 80%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .1)); }
+.login-marca { font-size: 4.5rem; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .15)); }
+.btn-login { font-weight: 600; padding: 12px; border-radius: var(--radio); }
+.login-container .form-control {
+    border-radius: var(--radio);
+    padding: 12px 15px;
+    border: 1px solid var(--borde-control);
+}
+.login-container .form-control:focus { border-color: var(--color-primario); box-shadow: 0 0 0 3px var(--color-primario-anillo); }
+.login-title { color: var(--texto); font-weight: 700; margin-bottom: 30px; position: relative; }
+.login-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 48px;
+    height: 4px;
+    background-color: var(--color-primario);
+    border-radius: 2px;
+}
+.login-container .form-label { font-weight: 600; color: var(--gris-700); margin-bottom: 8px; }
+.login-footer { text-align: center; margin-top: 20px; color: var(--texto-suave); font-size: .85rem; }
+.input-group-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gris-400);
+    z-index: 4;
+}
+/* Deja lugar al icono de la izquierda y al botón de mostrar contraseña de la derecha */
+.input-with-icon { padding-left: 44px !important; padding-right: 44px !important; }
+
+/* ==================== 12. AJUSTES PARA MÓVIL ==================== */
+@media (max-width: 575.98px) {
+    .navbar-custom ~ .container, .navbar-custom ~ .container-fluid, .navbar-custom ~ .container-xl { padding-top: 1.1rem; }
+    .titulo-pagina { font-size: 1.25rem; }
+    .acciones-pagina { width: 100%; }
+    .acciones-pagina > .btn, .acciones-pagina > a, .acciones-pagina > form { flex: 1 1 auto; }
+    .indicador { padding: .85rem .9rem; }
+    .indicador-valor { font-size: 1.2rem; }
+    /* Dos indicadores por fila: el icono se oculta para dejar sitio a la cifra */
+    .indicador > .indicador-icono { display: none; }
+    .card-header { padding: .8rem 1rem; }
+    .login-right { padding: 32px 24px; }
+    .resumen-total-valor { font-size: 1.75rem; }
+    .cantidad-carrito { width: 116px; }
+}
+@media (max-width: 991.98px) {
+    .resumen-venta { position: static; }
+}

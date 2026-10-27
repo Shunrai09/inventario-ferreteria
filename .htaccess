@@ -1,0 +1,7 @@
+# Solo se usa si el hosting no permite elegir public/ como carpeta raíz del sitio.
+# Envía todas las peticiones a public/, así app/, config/ y database/ nunca se sirven por web.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^public/ - [L]
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
